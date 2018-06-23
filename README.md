@@ -2,7 +2,7 @@
 
 This is the R package I developed while working at the Department of Bioinformatics and Computational Biology, UT MD Anderson Cancer Center. 
 
-Now the package is internally used in the department for high throughput genomic data analysis.
+**Now the package is internally used in the department for high throughput genomic data analysis**.
 
 Major functions include:
 - data type-aware automatic visualizations (continuous vs continuous, continuous vs categorical, categorical vs categorical with the same interface as plotScatter) coupled with informative statistical testing
