@@ -585,6 +585,110 @@ str_extract2 <- function(string, pattern){
 #str_extractPat(rg[, 1], '.*Sample_(.*)/tophat_out.*')
 
 
+showWithRestrict <- function(vec, restrict, Short=TRUE){
+	if(length(vec)>restrict) { 
+		ind <- 1:restrict
+		cat(sprintf('***A subset of elements is shown below (the first %d elements):***\n', restrict))
+	} else {
+		ind <- 1:length(vec)
+	}
+	### whether to break lines so that the whole vector can be shown in limited width 
+	if(Short) {
+	#browser()
+	res <- longVec2short(paste(vec[ind], collapse=', '), print=FALSE, maxLen=70, sep='\n')
+	} else {
+	res <- vec[ind]
+	}
+	res
+}
+longVec2short <- function(vec, maxLen=80, sep='\n\t', print=TRUE){
+	Len <- nchar(vec)
+	nSeg <- Len %/% maxLen
+	if(nSeg<1)
+		res <- vec
+	else {
+		st <- (0:nSeg)*maxLen+1
+		pieces <- sapply(st, function(x) {
+			ed <- x+maxLen-1
+			if(ed>Len) 
+				ed <- Len
+			substr(vec, x, ed)	
+		})
+		res <- paste(pieces, collapse=sep)
+	}
+	#browser()
+	if(print)
+		cat(res, '\n')
+	else {
+		res
+	}
+}
+#' Compare two vectors
+#' @param name1 vector 1 of strings
+#' @param name2 vector 2 of strings
+#' @param more whether to show detailed info (e.g. examples)
+#' @param restrict number of examples to show
+#' @export
+compareNames <- function(name1, name2, more=TRUE, restrict=50){
+	vector1str <- deparse(substitute(name1))
+	vector2str <- deparse(substitute(name2))
+	ind1 <- name1 %in% name2
+	ind2 <- name2 %in% name1
+	#browser()
+	if(all(ind1)) { ## name1 is a subset of name2
+		if(all(ind2)) { # name1=name2
+		cat("-->The two vectors are identical sets\n")
+		if(identical(as.character(name1), as.character(name2))){
+			cat('-->The two vectors are identical when converted to string\n')
+		}
+		if(identical(name1, name2)){
+			cat('-->Further, the two vectors are identical\n')
+			} else {
+			cat('-->However, the two vectors are not identical, due to different ordering or duplicates or different storage mode\n')
+			}
+		} else { # name1 is a subset of name2
+		cat(sprintf("-->Elements of %s are all in %s\n", vector1str, vector2str))
+		cat(sprintf("-->These shared elements are: \n%s\n", showWithRestrict(name1, restrict)))
+		#browser()
+		cat(sprintf('-->%s has %d additional elements\n', vector2str, length(setdiff(name2, name1))))
+		if(more) {
+			#browser()
+			cat(sprintf("-->Elements only in %s: \n%s\n", vector2str, showWithRestrict(sort(setdiff(name2, name1)), restrict)))
+			}
+		}
+	} else {
+		if(all(ind1==FALSE)) cat("-->None of the elements in vector 1 is in vector 2\n") ## not any of it in!
+#browser()
+		cat(sprintf('-->Elements only in %s: (N=%d)\n', vector1str, length(setdiff(name1, name2))))
+		cat('------------------------------------------------\n')
+		if(more)
+			cat(showWithRestrict(sort(setdiff(name1, name2)), restrict), '\n')
+		
+		cat('------------------------------------------------\n')
+		cat(sprintf('-->Shared elements: (N=%d)\n', length(sort(intersect(name1, name2)))))		
+		if(more){
+			if(length(intersect(name1, name2))>0)
+				cat(showWithRestrict(intersect(name1, name2), restrict), '\n')
+			else
+				cat('-->No shared elements is observed!', '\n')
+		}
+		cat('------------------------------------------------\n')
+		cat(sprintf('-->Elements only in %s: (N=%d)\n', vector2str, length(setdiff(name2, name1))))
+		if(more){
+			if(length(setdiff(name2, name1))>0)
+				#browser()
+				cat(showWithRestrict(sort(setdiff(name2, name1)), restrict), '\n')
+			else
+				{
+					#browser()
+					cat(sprintf('-->%s is a subset of %s. No additional elements!\n', vector2str, vector1str))
+				}	
+				
+		}
+		cat('------------------------------------------------\n')
+	}
+}
+
 # sometimes the colbar has outlier that distorts the data. To save color, we truncate it.
 ## this also applies for a heatmap matrix where outlier data might dominate
 ### q1: lower quantile to truncate
